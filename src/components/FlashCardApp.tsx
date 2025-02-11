@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { FlashCard } from '../types';
-import StudyDeck from './StudyDeck';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react'; // Importing useState and useEffect hooks from React
+import { v4 as uuidv4 } from 'uuid'; // Importing uuid for unique ID generation
+import { FlashCard } from '../types'; // Importing FlashCard type
+import StudyDeck from './StudyDeck'; // Importing StudyDeck component
 
 export default function FlashCardApp() {
+  // Defining state for cards, frontText, backText, and operation feedback message
   const [cards, setCards] = useState<FlashCard[]>(() => {
+    // Load flashcards from localStorage if available
     const saved = localStorage.getItem('flashcards');
     return saved ? JSON.parse(saved) : [];
   });
@@ -12,13 +16,16 @@ export default function FlashCardApp() {
   const [backText, setBackText] = useState('');
   const [operationFeedback, setOperationFeedback] = useState('');
 
+  // Save flashcards to localStorage whenever the cards state changes
   useEffect(() => {
     localStorage.setItem('flashcards', JSON.stringify(cards));
   }, [cards]);
 
+  // Function to add a new flashcard
   const addCard = () => {
     if (!frontText || !backText) return;
     
+    // Create a new flashcard object
     const newCard: FlashCard = {
       id: uuidv4(),
       front: frontText,
@@ -28,18 +35,22 @@ export default function FlashCardApp() {
       repetitions: 0
     };
 
+    // Add the new card to the cards state
     setCards([...cards, newCard]);
     setFrontText('');
     setBackText('');
   };
 
+  // Function to update an existing flashcard
   const updateCard = (updatedCard: FlashCard) => {
     setCards(cards.map(card => card.id === updatedCard.id ? updatedCard : card));
   };
 
+  // Function to reset all learning progress
   const resetProgress = () => {
     if (!window.confirm('Are you sure you want to reset all learning progress?')) return;
     
+    // Reset the progress of each card
     const resetCards = cards.map(card => ({
       ...card,
       nextReview: new Date().toISOString(),
@@ -51,6 +62,7 @@ export default function FlashCardApp() {
     setOperationFeedback('All learning progress has been reset');
   };
 
+  // Function to export cards as a JSON file
   const exportCards = () => {
     const dataStr = JSON.stringify(cards, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -65,6 +77,7 @@ export default function FlashCardApp() {
     setOperationFeedback('Cards exported successfully');
   };
 
+  // Function to handle import of cards from a JSON file
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -88,6 +101,7 @@ export default function FlashCardApp() {
     reader.readAsText(file);
   };
 
+  // Function to validate if an object is a valid FlashCard
   const isValidCard = (card: any): card is FlashCard => {
     return (
       typeof card?.id === 'string' &&
@@ -99,6 +113,7 @@ export default function FlashCardApp() {
     );
   };
 
+  // Function to remove all flashcards
   const removeAllCards = () => {
     if (!window.confirm('Are you sure you want to remove ALL cards?')) return;
     setCards([]);
