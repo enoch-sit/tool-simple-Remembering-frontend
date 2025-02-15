@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "clean-doc": "if exist doc rmdir /s /q doc && mkdir doc",
-    "build-win": "tsc -b && vite build && npm run clean-doc && move dist doc",
+    "clean-docs": "if exist docs rmdir /s /q docs && mkdir docs",
+    "build-win": "tsc -b && vite build && npm run clean-docs && move dist docs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0", 
     "preview": "vite preview"
   },
