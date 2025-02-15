@@ -6,5 +6,10 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'docs'
+  },
+  define: {
+    'process.env': {
+      TITLE: 'Simple Memorization'
+    }
   }
 })
