@@ -1,14 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from 'react'; // Importing useState and useEffect hooks from React
-import { v4 as uuidv4 } from 'uuid'; // Importing uuid for unique ID generation
-import { FlashCard } from '../types'; // Importing FlashCard type
-import StudyDeck from './StudyDeck'; // Importing StudyDeck component
-
+import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { FlashCard } from '../types';
+import StudyDeck from './StudyDeck';
+import {
+  Container,
+  Menu,
+  Segment,
+  Input,
+  Button,
+  Icon,
+  Label,
+} from 'semantic-ui-react';
 export default function FlashCardApp() {
-  // Defining state for cards, frontText, backText, and operation feedback message
   const [cards, setCards] = useState<FlashCard[]>(() => {
-    // Load flashcards from localStorage if available
     const saved = localStorage.getItem('flashcards');
     return saved ? JSON.parse(saved) : [];
   });
@@ -16,16 +20,13 @@ export default function FlashCardApp() {
   const [backText, setBackText] = useState('');
   const [operationFeedback, setOperationFeedback] = useState('');
 
-  // Save flashcards to localStorage whenever the cards state changes
   useEffect(() => {
     localStorage.setItem('flashcards', JSON.stringify(cards));
   }, [cards]);
 
-  // Function to add a new flashcard
   const addCard = () => {
     if (!frontText || !backText) return;
-    
-    // Create a new flashcard object
+
     const newCard: FlashCard = {
       id: uuidv4(),
       front: frontText,
@@ -35,34 +36,29 @@ export default function FlashCardApp() {
       repetitions: 0
     };
 
-    // Add the new card to the cards state
     setCards([...cards, newCard]);
     setFrontText('');
     setBackText('');
   };
 
-  // Function to update an existing flashcard
   const updateCard = (updatedCard: FlashCard) => {
     setCards(cards.map(card => card.id === updatedCard.id ? updatedCard : card));
   };
 
-  // Function to reset all learning progress
   const resetProgress = () => {
     if (!window.confirm('Are you sure you want to reset all learning progress?')) return;
-    
-    // Reset the progress of each card
+
     const resetCards = cards.map(card => ({
       ...card,
       nextReview: new Date().toISOString(),
       interval: 1,
       repetitions: 0
     }));
-    
-    setCards([...resetCards]);  // Create new array reference to trigger state reset
+
+    setCards([...resetCards]);
     setOperationFeedback('All learning progress has been reset');
   };
 
-  // Function to export cards as a JSON file
   const exportCards = () => {
     const dataStr = JSON.stringify(cards, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -77,7 +73,6 @@ export default function FlashCardApp() {
     setOperationFeedback('Cards exported successfully');
   };
 
-  // Function to handle import of cards from a JSON file
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -89,9 +84,9 @@ export default function FlashCardApp() {
         if (!Array.isArray(importedCards) || !importedCards.every(isValidCard)) {
           throw new Error('Invalid file format');
         }
-        
+
         if (!window.confirm(`Import ${importedCards.length} cards? This will replace current cards.`)) return;
-        
+
         setCards(importedCards);
         setOperationFeedback(`Successfully imported ${importedCards.length} cards`);
       } catch (error) {
@@ -101,7 +96,6 @@ export default function FlashCardApp() {
     reader.readAsText(file);
   };
 
-  // Function to validate if an object is a valid FlashCard
   const isValidCard = (card: any): card is FlashCard => {
     return (
       typeof card?.id === 'string' &&
@@ -113,7 +107,6 @@ export default function FlashCardApp() {
     );
   };
 
-  // Function to remove all flashcards
   const removeAllCards = () => {
     if (!window.confirm('Are you sure you want to remove ALL cards?')) return;
     setCards([]);
@@ -121,50 +114,49 @@ export default function FlashCardApp() {
   };
 
   return (
-    <div className="container">
-      <h1>Flashcards</h1>
-      <div className="management-controls">
-        <h2>Card Management</h2>
-        <div className="button-group">
-          <button onClick={resetProgress} className="warning">
+    <Container>
+      <Menu stackable inverted attached='top'>
+        <Menu.Item header>Flashcards</Menu.Item>
+        <Menu.Menu position='right'>
+          <Menu.Item as={Segment}>
+            <Button onClick={resetProgress} color='red'>
             Reset All Progress
-          </button>
-          <button onClick={exportCards} className="secondary">
+            </Button>
+            <Button onClick={exportCards} color='green' basic>
             Export Cards
-          </button>
-          <label className="file-import secondary">
-            Import Cards
-            <input
+            </Button>
+            <Input
               type="file"
               accept=".json"
               onChange={handleImport}
               style={{ display: 'none' }}
             />
-          </label>
-          <button onClick={removeAllCards} className="danger">
-            Remove All Cards
-          </button>
-        </div>
-        {operationFeedback && (
-          <div className="operation-feedback">{operationFeedback}</div>
-        )}
-      </div>
-      <div className="card-creator">
+            <Label as='button' onClick={() => document.querySelector('input[type=file]').click()}>
+              Import Cards
+            </Label>
+            <Button onClick={removeAllCards} color='red'>
+              Remove All Cards
+            </Button>
+          </Menu.Item>
+        </Menu.Menu>
+      </Menu>
+
+      <Segment attached='bottom'>
         <h2>Create New Card</h2>
-        <input
+        <Input
           value={frontText}
           onChange={(e) => setFrontText(e.target.value)}
           placeholder="Front of card"
         />
-        <input
+        <Input
           value={backText}
           onChange={(e) => setBackText(e.target.value)}
           placeholder="Back of card"
         />
-        <button onClick={addCard}>Add Card</button>
-      </div>
+        <Button onClick={addCard}>Add Card</Button>
+      </Segment>
 
       <StudyDeck cards={cards} updateCard={updateCard} />
-    </div>
+    </Container>
   );
 }
